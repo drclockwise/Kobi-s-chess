@@ -36,8 +36,8 @@ window.TYPE_CHALLENGES = {
 
 // 32 stukken: id -> title/type/photos
 window.CHESS = {
-  WK: { title: "Witte Koning", type: "KING", photos: "https://photos.app.goo.gl/XXXXX" },
-  WQ: { title: "Witte Koningin", type: "QUEEN", photos: "https://photos.app.goo.gl/XXXXX" },
+  WK: { title: "Witte Koning", type: "KING", photos: "https://photos.app.goo.gl/zNq6DChUMwLpu6NM6" },
+  WQ: { title: "Witte Koningin", type: "QUEEN", photos: "https://photos.app.goo.gl/LmXJr7FWbKZqMnwo8" },
 
   WR1:{ title: "Witte Toren 1", type:"ROOK", photos:"https://photos.app.goo.gl/XXXXX" },
   WR2:{ title: "Witte Toren 2", type:"ROOK", photos:"https://photos.app.goo.gl/XXXXX" },
@@ -57,24 +57,24 @@ window.CHESS = {
   WP7:{ title: "Witte Pion 7", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
   WP8:{ title: "Witte Pion 8", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
 
-  BK: { title: "Zwarte Koning", type:"KING", photos:"https://photos.app.goo.gl/XXXXX" },
-  BQ: { title: "Zwarte Koningin", type:"QUEEN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RK: { title: "Roze Koning", type:"KING", photos:"https://photos.app.goo.gl/XXXXX" },
+  RQ: { title: "Roze Koningin", type:"QUEEN", photos:"https://photos.app.goo.gl/XXXXX" },
 
-  BR1:{ title:"Zwarte Toren 1", type:"ROOK", photos:"https://photos.app.goo.gl/XXXXX" },
-  BR2:{ title:"Zwarte Toren 2", type:"ROOK", photos:"https://photos.app.goo.gl/XXXXX" },
+  RR1:{ title:"Roze Toren 1", type:"ROOK", photos:"https://photos.app.goo.gl/XXXXX" },
+  RR2:{ title:"Roze Toren 2", type:"ROOK", photos:"https://photos.app.goo.gl/XXXXX" },
 
-  BB1:{ title:"Zwarte Loper 1", type:"BISHOP", photos:"https://photos.app.goo.gl/XXXXX" },
-  BB2:{ title:"Zwarte Loper 2", type:"BISHOP", photos:"https://photos.app.goo.gl/XXXXX" },
+  RB1:{ title:"Roze Loper 1", type:"BISHOP", photos:"https://photos.app.goo.gl/XXXXX" },
+  RB2:{ title:"Roze Loper 2", type:"BISHOP", photos:"https://photos.app.goo.gl/XXXXX" },
 
-  BN1:{ title:"Zwart Paard 1", type:"KNIGHT", photos:"https://photos.app.goo.gl/XXXXX" },
-  BN2:{ title:"Zwart Paard 2", type:"KNIGHT", photos:"https://photos.app.goo.gl/XXXXX" },
+  RN1:{ title:"Roze Paard 1", type:"KNIGHT", photos:"https://photos.app.goo.gl/XXXXX" },
+  RN2:{ title:"Roze Paard 2", type:"KNIGHT", photos:"https://photos.app.goo.gl/XXXXX" },
 
-  BP1:{ title:"Zwarte Pion 1", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
-  BP2:{ title:"Zwarte Pion 2", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
-  BP3:{ title:"Zwarte Pion 3", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
-  BP4:{ title:"Zwarte Pion 4", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
-  BP5:{ title:"Zwarte Pion 5", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
-  BP6:{ title:"Zwarte Pion 6", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
-  BP7:{ title:"Zwarte Pion 7", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
-  BP8:{ title:"Zwarte Pion 8", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RP1:{ title:"Roze Pion 1", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RP2:{ title:"Roze Pion 2", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RP3:{ title:"Roze Pion 3", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RP4:{ title:"Roze Pion 4", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RP5:{ title:"Roze Pion 5", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RP6:{ title:"Roze Pion 6", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RP7:{ title:"Roze Pion 7", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
+  RP8:{ title:"Roze Pion 8", type:"PAWN", photos:"https://photos.app.goo.gl/XXXXX" },
 };
