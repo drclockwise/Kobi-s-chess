@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Memory Chess</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#0b1220;color:#f3f4f6}
+    .wrap{max-width:720px;margin:0 auto;padding:22px}
+    .card{background:#111a2e;border:1px solid #223055;border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    h1{font-size:22px;margin:0 0 6px}
+    .meta{opacity:.8;margin:0 0 14px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    a.btn,button{border:0;border-radius:14px;padding:12px 14px;font-weight:650;cursor:pointer;text-decoration:none;display:inline-block}
+    a.btn{background:#e5e7eb;color:#0b1220}
+    button{background:#2b4cff;color:white}
+    .ghost{background:#182446;border:1px solid #2a3a66}
+    .box{margin-top:14px;padding:14px;border-radius:14px;background:#0b1220;border:1px dashed #33406a}
+    .small{font-size:13px;opacity:.75;margin-top:12px}
+    code{background:#0b1220;padding:2px 6px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 id="title">Memory Chess</h1>
+      <p id="meta" class="meta"></p>
+
+      <div class="btns">
+        <a id="photosBtn" class="btn" href="#" target="_blank" rel="noopener">📸 Open foto’s</a>
+        <button id="rerollBtn" class="ghost">🎲 Andere challenge</button>
+        <button id="newGameBtn" class="ghost">♻️ Nieuwe partij</button>
+      </div>
+
+      <div class="box">
+        <div style="opacity:.85;margin-bottom:8px">Challenge:</div>
+        <div id="challengeText" style="font-size:18px;font-weight:650;line-height:1.25"></div>
+      </div>
+
+      <div class="small">
+        Tip spelregel: “scan alleen bij slaan” of “scan bij promotie/schaak/mat”.
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const id = (params.get("id") || "").toUpperCase();
+
+    const titleEl = document.getElementById("title");
+    const metaEl = document.getElementById("meta");
+    const photosBtn = document.getElementById("photosBtn");
+    const challengeText = document.getElementById("challengeText");
+
+    const rerollBtn = document.getElementById("rerollBtn");
+    const newGameBtn = document.getElementById("newGameBtn");
+
+    function uuid() {
+      if (crypto?.randomUUID) return crypto.randomUUID();
+      return (Date.now().toString(36) + Math.random().toString(36).slice(2));
+    }
+
+    function getGame() {
+      let g = JSON.parse(localStorage.getItem("mc_game") || "null");
+      if (!g) {
+        g = { id: uuid(), startedAt: Date.now() };
+        localStorage.setItem("mc_game", JSON.stringify(g));
+      }
+      return g;
+    }
+
+    function resetGame() {
+      const g = { id: uuid(), startedAt: Date.now() };
+      localStorage.setItem("mc_game", JSON.stringify(g));
+      // used set hoort bij game-id, dus nieuw id = automatisch leeg
+      return g;
+    }
+
+    function getUsed(gameId) {
+      const raw = localStorage.getItem("mc_used_" + gameId);
+      return new Set(raw ? JSON.parse(raw) : []);
+    }
+    function setUsed(gameId, usedSet) {
+      localStorage.setItem("mc_used_" + gameId, JSON.stringify([...usedSet]));
+    }
+
+    function randInt(n) {
+      // betere random dan Math.random()
+      const a = new Uint32Array(1);
+      crypto.getRandomValues(a);
+      return a[0] % n;
+    }
+
+    function buildPool(piece) {
+      const typePool = window.TYPE_CHALLENGES?.[piece.type] || [];
+      const globalPool = window.GLOBAL_CHALLENGES || [];
+      // combineer & unieke strings
+      return [...new Set([...typePool, ...globalPool])];
+    }
+
+    function drawChallenge(piece) {
+      const game = getGame();
+      const used = getUsed(game.id);
+      const pool = buildPool(piece);
+
+      let available = pool.filter(c => !used.has(c));
+
+      // Als alles op is: reset used voor deze game (of kies uit pool)
+      if (available.length === 0) {
+        used.clear();
+        available = pool.slice();
+      }
+
+      const pick = available[randInt(available.length)];
+      used.add(pick);
+      setUsed(game.id, used);
+      return { pick, game };
+    }
+
+    const piece = window.CHESS?.[id];
+
+    if (!piece) {
+      titleEl.textContent = "Onbekend stuk";
+      metaEl.innerHTML = "Geen match voor <code>?id=...</code> — check je NFC link (bv. <code>?id=WK</code>).";
+      photosBtn.style.display = "none";
+      rerollBtn.style.display = "none";
+      return;
+    }
+
+    titleEl.textContent = piece.title + " (" + id + ")";
+    photosBtn.href = piece.photos;
+
+    function refreshChallenge() {
+      const { pick, game } = drawChallenge(piece);
+      challengeText.textContent = pick;
+      const d = new Date(game.startedAt);
+      metaEl.textContent = "Partij gestart: " + d.toLocaleString("nl-NL");
+    }
+
+    rerollBtn.addEventListener("click", refreshChallenge);
+    newGameBtn.addEventListener("click", () => {
+      resetGame();
+      refreshChallenge();
+    });
+
+    // bij laden meteen een challenge tonen
+    refreshChallenge();
+  </script>
+</body>
+</html>
