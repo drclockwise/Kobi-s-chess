@@ -6,7 +6,7 @@
   <title>Kobi's memory chess</title>
   <style>
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#0b1220;color:#f3f4f6}
-    .wrap{max-width:720px;margin:0 auto;padding:22px}
+    .wrap{max-width:760px;margin:0 auto;padding:22px}
     .card{background:#111a2e;border:1px solid #223055;border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
     h1{font-size:22px;margin:0 0 6px}
     .meta{opacity:.8;margin:0 0 14px}
@@ -18,96 +18,72 @@
     .box{margin-top:14px;padding:14px;border-radius:14px;background:#0b1220;border:1px dashed #33406a}
     .small{font-size:13px;opacity:.75;margin-top:12px}
     code{background:#0b1220;padding:2px 6px;border-radius:8px}
+    .err{margin-top:14px;padding:12px;border-radius:14px;background:#2a1020;border:1px solid #6a2a44;display:none;white-space:pre-wrap}
   </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1 id="title">Kobi's memory chess</h1>
-      <p id="meta" class="meta"></p>
 
-      <div class="btns">
-        <a id="photosBtn" class="btn" href="#" target="_blank" rel="noopener">📸 Bekeijk herinnering</a>
-        <button id="rerollBtn" class="ghost">🎲 Andere challenge</button>
-        <button id="newGameBtn" class="ghost">♻️ Nieuwe partij</button>
-      </div>
+  <!-- Zorgt dat data.js eerst geladen is -->
+  <script src="data.js" defer></script>
+  <script defer>
+    // ------- SAFE STORAGE (werkt ook als localStorage faalt) -------
+    const MEM = { game: null, usedByGame: {} };
 
-      <div class="box">
-        <div style="opacity:.85;margin-bottom:8px">Challenge:</div>
-        <div id="challengeText" style="font-size:18px;font-weight:650;line-height:1.25"></div>
-      </div>
+    function safeGet(key){ try { return localStorage.getItem(key); } catch { return null; } }
+    function safeSet(key,val){ try { localStorage.setItem(key,val); return true; } catch { return false; } }
 
-      <div class="small">
-        Tip spelregel: “scan alleen bij slaan” of “scan bij promotie/schaak/mat”.
-      </div>
-    </div>
-  </div>
-
-  <script src="data.js"></script>
-  <script>
-    const params = new URLSearchParams(location.search);
-    const id = (params.get("id") || "").toUpperCase();
-
-    const titleEl = document.getElementById("title");
-    const metaEl = document.getElementById("meta");
-    const photosBtn = document.getElementById("photosBtn");
-    const challengeText = document.getElementById("challengeText");
-
-    const rerollBtn = document.getElementById("rerollBtn");
-    const newGameBtn = document.getElementById("newGameBtn");
-
-    function uuid() {
-      if (crypto?.randomUUID) return crypto.randomUUID();
+    function uuid(){
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
       return (Date.now().toString(36) + Math.random().toString(36).slice(2));
     }
 
-    function getGame() {
-      let g = JSON.parse(localStorage.getItem("mc_game") || "null");
-      if (!g) {
-        g = { id: uuid(), startedAt: Date.now() };
-        localStorage.setItem("mc_game", JSON.stringify(g));
-      }
-      return g;
+    function getGame(){
+      const raw = safeGet("mc_game");
+      if (raw) return JSON.parse(raw);
+      if (!MEM.game) MEM.game = { id: uuid(), startedAt: Date.now() };
+      safeSet("mc_game", JSON.stringify(MEM.game));
+      return MEM.game;
     }
-
-    function resetGame() {
+    function resetGame(){
       const g = { id: uuid(), startedAt: Date.now() };
-      localStorage.setItem("mc_game", JSON.stringify(g));
-      // used set hoort bij game-id, dus nieuw id = automatisch leeg
+      MEM.game = g;
+      MEM.usedByGame[g.id] = new Set();
+      safeSet("mc_game", JSON.stringify(g));
       return g;
     }
-
-    function getUsed(gameId) {
-      const raw = localStorage.getItem("mc_used_" + gameId);
-      return new Set(raw ? JSON.parse(raw) : []);
+    function getUsed(gameId){
+      const raw = safeGet("mc_used_" + gameId);
+      if (raw) return new Set(JSON.parse(raw));
+      if (!MEM.usedByGame[gameId]) MEM.usedByGame[gameId] = new Set();
+      return MEM.usedByGame[gameId];
     }
-    function setUsed(gameId, usedSet) {
-      localStorage.setItem("mc_used_" + gameId, JSON.stringify([...usedSet]));
-    }
-
-    function randInt(n) {
-      // betere random dan Math.random()
-      const a = new Uint32Array(1);
-      crypto.getRandomValues(a);
-      return a[0] % n;
+    function setUsed(gameId, usedSet){
+      MEM.usedByGame[gameId] = usedSet;
+      safeSet("mc_used_" + gameId, JSON.stringify([...usedSet]));
     }
 
-    function buildPool(piece) {
-      const typePool = window.TYPE_CHALLENGES?.[piece.type] || [];
+    function randInt(n){
+      if (window.crypto && crypto.getRandomValues){
+        const a = new Uint32Array(1);
+        crypto.getRandomValues(a);
+        return a[0] % n;
+      }
+      return Math.floor(Math.random() * n);
+    }
+
+    function buildPool(piece){
+      const typePool = (window.TYPE_CHALLENGES && window.TYPE_CHALLENGES[piece.type]) ? window.TYPE_CHALLENGES[piece.type] : [];
       const globalPool = window.GLOBAL_CHALLENGES || [];
-      // combineer & unieke strings
       return [...new Set([...typePool, ...globalPool])];
     }
 
-    function drawChallenge(piece) {
+    function drawChallenge(piece){
       const game = getGame();
       const used = getUsed(game.id);
       const pool = buildPool(piece);
 
-      let available = pool.filter(c => !used.has(c));
+      if (!pool.length) return { pick: "⚠️ Geen challenges gevonden. Zet GLOBAL_CHALLENGES of TYPE_CHALLENGES in data.js.", game };
 
-      // Als alles op is: reset used voor deze game (of kies uit pool)
-      if (available.length === 0) {
+      let available = pool.filter(c => !used.has(c));
+      if (!available.length){
         used.clear();
         available = pool.slice();
       }
@@ -118,34 +94,98 @@
       return { pick, game };
     }
 
-    const piece = window.CHESS?.[id];
-
-    if (!piece) {
-      titleEl.textContent = "Onbekend stuk";
-      metaEl.innerHTML = "Geen match voor <code>?id=...</code> — check je NFC link (bv. <code>?id=WK</code>).";
-      photosBtn.style.display = "none";
-      rerollBtn.style.display = "none";
-      return;
+    function showError(msg){
+      const el = document.getElementById("err");
+      el.style.display = "block";
+      el.textContent = msg;
     }
 
-    titleEl.textContent = piece.title + " (" + id + ")";
-    photosBtn.href = piece.photos;
+    // ------- INIT -------
+    window.addEventListener("DOMContentLoaded", () => {
+      try{
+        const params = new URLSearchParams(location.search);
+        const id = (params.get("id") || "").toUpperCase();
 
-    function refreshChallenge() {
-      const { pick, game } = drawChallenge(piece);
-      challengeText.textContent = pick;
-      const d = new Date(game.startedAt);
-      metaEl.textContent = "Partij gestart: " + d.toLocaleString("nl-NL");
-    }
+        const titleEl = document.getElementById("title");
+        const metaEl = document.getElementById("meta");
+        const photosBtn = document.getElementById("photosBtn");
+        const challengeText = document.getElementById("challengeText");
+        const rerollBtn = document.getElementById("rerollBtn");
+        const newGameBtn = document.getElementById("newGameBtn");
+        const debugEl = document.getElementById("debug");
 
-    rerollBtn.addEventListener("click", refreshChallenge);
-    newGameBtn.addEventListener("click", () => {
-      resetGame();
-      refreshChallenge();
+        // debug info
+        debugEl.textContent =
+          `id=${id || "(geen)"} | data.js loaded=${!!window.CHESS} | challenges(global)=${(window.GLOBAL_CHALLENGES||[]).length}`;
+
+        if (!id){
+          titleEl.textContent = "Scan een stuk";
+          metaEl.innerHTML = `Voeg <code>?id=WK</code> toe aan de URL (later doet NFC dit automatisch).`;
+          photosBtn.style.display = "none";
+          rerollBtn.style.display = "none";
+          newGameBtn.style.display = "none";
+          return;
+        }
+
+        if (!window.CHESS){
+          showError("data.js is niet geladen (of heeft een syntax error). Check: /Kobischess/data.js");
+          return;
+        }
+
+        const piece = window.CHESS[id];
+        if (!piece){
+          titleEl.textContent = "Onbekend stuk";
+          metaEl.innerHTML = `Geen entry voor <code>${id}</code> in data.js`;
+          photosBtn.style.display = "none";
+          rerollBtn.style.display = "none";
+          return;
+        }
+
+        titleEl.textContent = `${piece.title} (${id})`;
+        metaEl.textContent = `Type: ${piece.type}`;
+        photosBtn.href = piece.photos; // <— dit is waarom jouw knop nu “#” blijft als JS crasht
+
+        function refresh(){
+          const { pick, game } = drawChallenge(piece);
+          challengeText.textContent = pick;
+          const d = new Date(game.startedAt);
+          document.getElementById("gameInfo").textContent = `Partij gestart: ${d.toLocaleString("nl-NL")}`;
+        }
+
+        rerollBtn.addEventListener("click", refresh);
+        newGameBtn.addEventListener("click", () => { resetGame(); refresh(); });
+
+        refresh();
+      } catch(e){
+        showError("JS error:\n" + (e && e.stack ? e.stack : e));
+      }
     });
-
-    // bij laden meteen een challenge tonen
-    refreshChallenge();
   </script>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 id="title">Kobi's memory chess</h1>
+      <p id="meta" class="meta"></p>
+
+      <div class="btns">
+        <a id="photosBtn" class="btn" href="#" target="_blank" rel="noopener">📸 Bekijk herinnering</a>
+        <button id="rerollBtn" class="ghost">🎲 Andere challenge</button>
+        <button id="newGameBtn" class="ghost">♻️ Nieuwe partij</button>
+      </div>
+
+      <div class="box">
+        <div style="opacity:.85;margin-bottom:8px">Challenge:</div>
+        <div id="challengeText" style="font-size:18px;font-weight:650;line-height:1.25"></div>
+        <div id="gameInfo" class="small"></div>
+      </div>
+
+      <div class="small">Tip spelregel: “scan alleen bij slaan” of “scan bij promotie/schaak/mat”.</div>
+
+      <div id="err" class="err"></div>
+      <div id="debug" class="small" style="margin-top:10px;"></div>
+    </div>
+  </div>
 </body>
 </html>
