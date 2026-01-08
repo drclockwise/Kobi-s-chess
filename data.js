@@ -36,8 +36,8 @@ window.TYPE_CHALLENGES = {
 
 // 32 stukken: id -> title/type/photos
 window.CHESS = {
-  WK: { title: "Witte Koning", type: "KING", photos: "https://photos.google.com/u/1/share/AF1QipNU4vPEbOc9CT4i6Ay8ICx-jVvHOfEAV3Hr0D6AVJI7LnWryLuh-Hi6_4XEQ_98Bg?key=Ry1sWFRoNG41ZVZWVnNnYm9pZE1Ra05sN3RNNGdn" },
-  WQ: { title: "Witte Koningin", type: "QUEEN", photos: "https://photos.app.goo.gl/LmXJr7FWbKZqMnwo8" },
+  WK: { title: "Witte Koning", type: "KING", photos: "" },
+  WQ: { title: "Witte Koningin", type: "QUEEN", photos: "" },
 
   WR1:{ title: "Witte Toren 1", type:"ROOK", photos:"https://photos.app.goo.gl/XXXXX" },
   WR2:{ title: "Witte Toren 2", type:"ROOK", photos:"https://photos.app.goo.gl/XXXXX" },
